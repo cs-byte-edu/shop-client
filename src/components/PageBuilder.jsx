@@ -1,90 +1,76 @@
-import { lazy, Suspense } from "react";
-// import { Skeleton } from "../components/Skeleton";
-import Section from "./Section";
-import { Product } from "./product/Product";
+import { useMemo, memo, lazy, Suspense } from "react";
+import { Skeleton } from "../components/Skeleton";
+import { ErrorBoundary } from "./ErrorBoundary";
 
-const CardGrid = lazy(() => import("./CardGrid"));
-const PopularProducts = lazy(() => import("./PopularProducts"));
-const ProductGrid = lazy(() => import("./product/ProductGrid"));
+// import { useApp} from '../context/AppContext';
+// import { useApi } from "../hooks/useApi";
+// import { HeroBlock } from "./blocks/HeroBlock";
+// import { TextBlock } from "./blocks/TextBlock";
+// import { GalleryBlock } from "./blocks/GalleryBlock";
+// import { ProductsBlock } from "./blocks/ProductsBlock";
+// import { CategoriesBlock } from "./blocks/CategoriesBlock";
+// import { ContactBlock } from "./blocks/ContactBlock";
+// import { LoadingSpinner } from "./LoadingSpinner";
+// import { ErrorMessage } from "./ErrorMessage";
+// import { useEffect } from "react";
+// import { FeaturedProducts } from "./FeaturedProducts";
+// import { ProductsGrid } from "./ProductsGrid";
+// import { Benefits } from "./Benefits";
+// import { PopularProducts } from "./PopularProducts";
+
+// Мапа компонентів для різних типів блоків
+// const blockMap = {
+// benefits: Benefits,
+// featured_products: FeaturedProducts,
+// new_products: ProductsGrid,
+// deals: ProductsGrid,
+// products_popular: PopularProducts,
+// "page.hero": HeroBlock,
+// "gallery.grid": GalleryBlock,
+// "categories.grid": CategoriesBlock,
+// "contact.info": ContactBlock,
+// };
 
 const BLOCK_COMPONENTS = {
-  "blocks.category-card": CardGrid,
-  "layout.section-benefits": CardGrid,
-  "blocks.category-tabs": PopularProducts,
-  "layout.section-category": ProductGrid,
+  benefits: lazy(() => import("./Benefits")),
+  featured_products: lazy(() => import("./FeaturedProducts")),
+  deals: lazy(() => import("./ProductsGrid")),
+  products_popular: lazy(() => import("./PopularProducts")),
+  // products_popular: lazy(() => import("./blocks/PopularProducts")),
   // hero: lazy(() => import("./blocks/HeroBlock")),
   // gallery: lazy(() => import("./blocks/GalleryBlock")),
   // categories: lazy(() => import("./blocks/CategoriesBlock")),
+  // contact: lazy(() => import("./blocks/ContactBlock")),
 };
 
-export const PageBuilder = ({ pageData }) => {
-  if (!pageData) {
+export const PageBuilder = memo(({ pageData = {} }) => {
+  const page = pageData ?? {};
+  const blocks = useMemo(() => {
+    return Object?.entries(page)
+      .map(([blockType, blockData], index) => {
+        const Component = BLOCK_COMPONENTS[blockType];
+
+        if (!Component) {
+          console.warn(`Block component "${blockType}" not found`);
+          return null;
+        }
+
+        return (
+          <Suspense key={`${blockType}-${index}`} fallback={<Skeleton />}>
+            <Component data={blockData} />
+          </Suspense>
+        );
+      })
+      .filter(Boolean);
+  }, [pageData]);
+
+  if (!pageData || Object.keys(pageData).length === 0) {
     return <div className="text-center py-8">No content available</div>;
   }
 
-  const blocks = pageData.map((blockType) => {
-    const Component = BLOCK_COMPONENTS[blockType.__component];
-
-    if (!Component) return null;
-
-    let blockData = null;
-    let sectionHeading = null;
-
-    switch (blockType.__component) {
-      case "blocks.category-card": {
-        sectionHeading = { section_heading: blockType.heading };
-
-        blockData = {
-          card_items: blockType.category.children,
-        };
-        break;
-      }
-
-      case "layout.section-benefits": {
-        sectionHeading = { section_heading: blockType.heading };
-
-        blockData = {
-          card_items: blockType.benefits,
-        };
-        break;
-      }
-
-      case "blocks.category-tabs": {
-        sectionHeading = {
-          section_heading: blockType.heading,
-          section_description: blockType.description,
-        };
-
-        blockData = {
-          products: blockType.category.products,
-        };
-        break;
-      }
-
-      case "layout.section-category": {
-        sectionHeading = {
-          section_heading: blockType.section_heading,
-          section_description: blockType.section_description,
-        };
-
-        blockData = {
-          products: blockType.category.products,
-          renderContent: (product) => (
-            <Product product={product} key={product.documentId} />
-          ),
-        };
-        break;
-      }
-    }
-
-    return (
-      <Suspense key={blockType.id}>
-        <Section sectionHeader={sectionHeading}>
-          <Component data={blockData} />
-        </Section>
-      </Suspense>
-    );
-  });
-
-  return <div className="page-builder">{blocks}</div>;
-};
+  return (
+    <div className="page-builder">
+      <ErrorBoundary>{blocks}</ErrorBoundary>
+    </div>
+  );
+});

@@ -5,20 +5,32 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { Search } from "./Search";
-import { Menu } from "./ui/menu/Menu";
+import { Nav } from "./Nav";
 import { Badge } from "./Badge";
+import { useUserInteraction } from "../state/userInteraction/userInteractionContext";
+import { useCart } from "../state/cart/cartContext";
+import { useProducts } from "../state/product/productContext";
 import { useCallback } from "react";
 
 export const NavBar = ({ navItems }) => {
-  const handleFilterChange = useCallback(() => {}, []);
+  const { totalItems: totalItemsCart } = useCart();
+  const { wishlistItems, compareItems } = useUserInteraction();
+  const { updateFilters } = useProducts();
 
-  const totalItemsCompare = 0;
-  const totalItemsWishlist = 0;
-  const totalItemsCart = 0;
+  const handleFilterChange = useCallback(
+    (newFilters) => {
+      updateFilters({ ...newFilters, page: 1 });
+    },
+    [updateFilters]
+  );
+
+  const totalItemsCompare = compareItems.length;
+  const totalItemsWishlist = wishlistItems.length;
+
   return (
     <>
       <div className="border-t border-b border-gray-300 lg:pt-[30px] lg:pb-[30px]">
-        <div className="box flex items-center justify-between">
+        <div className="container flex items-center justify-between">
           <Link
             to="/"
             className="uppercase text-[var(--c-green-500)] text-2xl font-bold"
@@ -59,8 +71,8 @@ export const NavBar = ({ navItems }) => {
 
       {/* NAVIGATION */}
       <div className="border-b border-gray-300 lg:pt-[15px] lg:pb-[15px]">
-        <div className="box">
-          <Menu navItems={navItems} />
+        <div className="container">
+          <Nav navItems={navItems} />
         </div>
       </div>
     </>

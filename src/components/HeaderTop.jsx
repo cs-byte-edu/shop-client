@@ -1,10 +1,10 @@
 import { Link, useNavigate } from "react-router";
 import { UserIcon, TruckIcon } from "@heroicons/react/24/outline";
-import { useBoundStore } from "../store";
+import { useAuth } from "../state/auth/authContext";
 
 export const HeaderTop = () => {
-  const { isAuthenticated, logout, user } = useBoundStore();
   const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -12,7 +12,7 @@ export const HeaderTop = () => {
   };
 
   return (
-    <div className="box flex items-center justify-between lg:pt-4 lg:pb-4 text-gray-500">
+    <div className="container flex items-center justify-between lg:pt-4 lg:pb-4 text-gray-500">
       <div className="flex items-center gap-4">
         {isAuthenticated ? (
           <>
@@ -21,7 +21,7 @@ export const HeaderTop = () => {
               className="relative flex items-center gap-2 pr-4 hover:text-gray-800 cursor-pointer after:absolute after:right-0 after:top-1/2 after:-mt-2.5 after:content-[''] after:w-px after:h-5 after:bg-green-200"
             >
               <UserIcon className="w-5 h-5 text-green-500" />
-              <span>{user?.username}</span>
+              <span>{user.username || user.name}</span>
             </Link>
 
             <Link

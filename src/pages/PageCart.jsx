@@ -1,22 +1,27 @@
+import { useCart } from "../state/cart/cartContext";
 import { Qty } from "../components/Qty";
 import { XCircleIcon } from "@heroicons/react/24/outline";
 // import { ButtonAction } from "../components/ButtonAction";
 import { useNavigate } from "react-router";
-import { useBoundStore } from "../store";
 
 const PageCart = () => {
-  // const addToCart = useBoundStore((s) => s.addToCart);
+  const {
+    cartItems,
+    totalPrice,
+    updateQtyCart,
+    removeItemFromCart,
 
-  console.log(addToCart);
+    // placeUserOrder,
+  } = useCart();
 
   const navigate = useNavigate();
 
   return (
-    <section className="box lg:py-[70px]">
+    <section className="container lg:py-[70px]">
       <h2 className="lg:text-3xl font-semibold mb-[20px]">Shopping cart</h2>
 
       <div className="">
-        {/* {cartItems.length > 0 && (
+        {cartItems.length > 0 && (
           <>
             <div className="flex bg-[var(--c-green-100)] rounded-[15px] px-[20px] py-[25px] mb-[20px] text-green-600 font-medium">
               <div className="basis-[40%] shrink-0">Product</div>
@@ -82,7 +87,7 @@ const PageCart = () => {
               Оформити замовлення
             </button>
           </>
-        )} */}
+        )}
       </div>
     </section>
   );
